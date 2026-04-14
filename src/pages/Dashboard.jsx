@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NotificationsPanel, { INITIAL_NOTIFICATIONS } from "./NotificationsPanel";
 
 const kpis = [
   { label: "Total Assets",   value: "148", sub: "+6 this month",    color: "text-[#2980B9]", bar: "bg-[#2980B9]", pct: "74%" },
@@ -34,7 +36,7 @@ const navItems = [
   { label: "Scheduling",  path: "/scheduling", active: false },
   { label: "My Tasks",    path: "/tasks",      active: false },
   { label: "Logs",        path: "/logs",       active: false },
-  { label: "Monitoring",  path: "/monitoring", active: false },
+  { label: "Tickets",     path: "/tickets",    active: false },
   { label: "Reports",     path: "/reports",    active: false },
 ];
 
@@ -44,6 +46,7 @@ const missedBars    = [28, 20, 14, 18, 10,  5];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans overflow-hidden">
@@ -108,12 +111,7 @@ export default function Dashboard() {
             <span className="text-xs text-gray-400 bg-gray-100 rounded-md px-3 py-1">
               {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
             </span>
-            <button className="relative w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-50">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>
-            </button>
+            <NotificationsPanel notifications={notifications} setNotifications={setNotifications} />
           </div>
         </header>
 

@@ -7,20 +7,26 @@ import MyTasksPage from "./pages/MyTasksPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import AssetManagementPage from "./pages/AssetManagementPage";
 import DesktopMonitoringPage from "./pages/DesktopMonitoringPage";
+import ProtectedRoute from "./pages/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public route — always accessible */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/scheduling" element={<SchedulingPage />} />
-        <Route path="/logs" element={<MaintenanceLogsPage />} />
-        <Route path="/tasks" element={<MyTasksPage />} />
-        <Route path="/users" element={<UserManagementPage />} />
-        <Route path="/assets" element={<AssetManagementPage />} />
-        <Route path="/monitoring" element={<DesktopMonitoringPage />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+
+        {/* Protected routes — redirect to /login if no token */}
+        <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/scheduling" element={<ProtectedRoute><SchedulingPage /></ProtectedRoute>} />
+        <Route path="/logs"       element={<ProtectedRoute><MaintenanceLogsPage /></ProtectedRoute>} />
+        <Route path="/tasks"      element={<ProtectedRoute><MyTasksPage /></ProtectedRoute>} />
+        <Route path="/users"      element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
+        <Route path="/assets"     element={<ProtectedRoute><AssetManagementPage /></ProtectedRoute>} />
+        <Route path="/monitoring" element={<ProtectedRoute><DesktopMonitoringPage /></ProtectedRoute>} />
+
+        {/* Catch-all — redirect unknown paths to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

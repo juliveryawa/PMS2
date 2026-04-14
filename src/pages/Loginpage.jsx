@@ -30,25 +30,51 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      // ── Try real backend first ─────────────────────────────────────────────
       const res = await axios.post("/api/auth/login", { email, password });
       const { token, user } = res.data;
 
-      // Store token
-      if (remember) {
-        localStorage.setItem("pms_token", token);
-      } else {
-        sessionStorage.setItem("pms_token", token);
-      }
+      if (remember) localStorage.setItem("pms_token", token);
+      else          sessionStorage.setItem("pms_token", token);
 
-      // Redirect based on role
-      if (user.role === "admin")      navigate("/dashboard");
+      if (user.role === "admin")           navigate("/dashboard");
       else if (user.role === "technician") navigate("/tasks");
-      else                            navigate("/reports");
+      else                                 navigate("/dashboard");
 
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Invalid email or password. Please try again."
-      );
+      // ── Fallback: mock login while backend is not yet connected ────────────
+      if (!err.response) {
+        // No server running — use mock credentials
+        const MOCK_USERS = [
+          { email: "admin@lfc.com",      password: "admin123",  role: "admin"       },
+          { email: "tech@lfc.com",       password: "tech123",   role: "technician"  },
+          { email: "viewer@lfc.com",     password: "viewer123", role: "viewer"      },
+        ];
+
+        const match = MOCK_USERS.find(
+          u => u.email === email && u.password === password
+        );
+
+        if (match) {
+          const mockToken = `mock_${match.role}_${Date.now()}`;
+          if (remember) localStorage.setItem("pms_token", mockToken);
+          else          sessionStorage.setItem("pms_token", mockToken);
+
+          // Also store basic user info for display
+          sessionStorage.setItem("pms_user", JSON.stringify({
+            name: match.email.split("@")[0],
+            role: match.role,
+          }));
+
+          navigate("/dashboard");
+        } else {
+          setError("Invalid email or password. Please try again.");
+        }
+      } else {
+        setError(
+          err.response?.data?.message || "Invalid email or password. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
