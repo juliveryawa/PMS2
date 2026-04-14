@@ -34,7 +34,7 @@ const navItems = [
   { label: "Scheduling",  path: "/scheduling", active: false },
   { label: "My Tasks",    path: "/tasks",      active: false },
   { label: "Logs",        path: "/logs",       active: false },
-  { label: "Tickets",     path: "/tickets",    active: false },
+  { label: "Monitoring",  path: "/monitoring", active: false },
   { label: "Reports",     path: "/reports",    active: false },
 ];
 
