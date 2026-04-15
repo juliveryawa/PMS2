@@ -29,52 +29,44 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+
+    // ── Mock credentials (used while backend is not yet connected) ────────────
+    const MOCK_USERS = [
+      { email: "admin@lfc.com",   password: "admin123",  role: "admin"      },
+      { email: "tech@lfc.com",    password: "tech123",   role: "technician" },
+      { email: "viewer@lfc.com",  password: "viewer123", role: "viewer"     },
+    ];
+
+    const mockMatch = MOCK_USERS.find(
+      u => u.email === email && u.password === password
+    );
+
+    if (mockMatch) {
+      // Mock login — no API call needed
+      const mockToken = `mock_${mockMatch.role}_${Date.now()}`;
+      if (remember) localStorage.setItem("pms_token", mockToken);
+      else          sessionStorage.setItem("pms_token", mockToken);
+      sessionStorage.setItem("pms_user", JSON.stringify({
+        name: mockMatch.email.split("@")[0],
+        role: mockMatch.role,
+      }));
+      setLoading(false);
+      if (mockMatch.role === "technician") navigate("/tasks");
+      else                                 navigate("/dashboard");
+      return;
+    }
+
+    // ── Real backend (uncomment when API is ready) ────────────────────────────
     try {
-      // ── Try real backend first ─────────────────────────────────────────────
       const res = await axios.post("/api/auth/login", { email, password });
       const { token, user } = res.data;
-
       if (remember) localStorage.setItem("pms_token", token);
       else          sessionStorage.setItem("pms_token", token);
-
-      if (user.role === "admin")           navigate("/dashboard");
-      else if (user.role === "technician") navigate("/tasks");
-      else                                 navigate("/dashboard");
-
+      sessionStorage.setItem("pms_user", JSON.stringify(user));
+      if (user.role === "technician") navigate("/tasks");
+      else                            navigate("/dashboard");
     } catch (err) {
-      // ── Fallback: mock login while backend is not yet connected ────────────
-      if (!err.response) {
-        // No server running — use mock credentials
-        const MOCK_USERS = [
-          { email: "admin@lfc.com",      password: "admin123",  role: "admin"       },
-          { email: "tech@lfc.com",       password: "tech123",   role: "technician"  },
-          { email: "viewer@lfc.com",     password: "viewer123", role: "viewer"      },
-        ];
-
-        const match = MOCK_USERS.find(
-          u => u.email === email && u.password === password
-        );
-
-        if (match) {
-          const mockToken = `mock_${match.role}_${Date.now()}`;
-          if (remember) localStorage.setItem("pms_token", mockToken);
-          else          sessionStorage.setItem("pms_token", mockToken);
-
-          // Also store basic user info for display
-          sessionStorage.setItem("pms_user", JSON.stringify({
-            name: match.email.split("@")[0],
-            role: match.role,
-          }));
-
-          navigate("/dashboard");
-        } else {
-          setError("Invalid email or password. Please try again.");
-        }
-      } else {
-        setError(
-          err.response?.data?.message || "Invalid email or password. Please try again."
-        );
-      }
+      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -223,12 +215,17 @@ export default function LoginPage() {
               <button
                 key={key}
                 type="button"
-                onClick={() => setRole(key)}
-                className={`p-2.5 rounded-lg border text-center transition text-sm
-                  ${role === key
-                    ? "border-[#2980B9] bg-blue-50"
-                    : "border-gray-200 bg-gray-50 hover:border-[#2980B9]"
-                  }`}
+                onClick={() => {
+                  setRole(key);
+                  // Auto-fill credentials based on role
+                  const creds = {
+                    admin:      { email: "admin@lfc.com",  password: "admin123"  },
+                    technician: { email: "tech@lfc.com",   password: "tech123"   },
+                    viewer:     { email: "viewer@lfc.com", password: "viewer123" },
+                  };
+                  setEmail(creds[key].email);
+                  setPassword(creds[key].password);
+                }}
               >
                 <span className="text-base">{icon}</span>
                 <span className="block font-semibold text-gray-700 text-xs mt-0.5">{label}</span>
